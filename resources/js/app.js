@@ -1,8 +1,15 @@
 import "./bootstrap";
+import Alpine from "alpinejs";
+import collapse from "@alpinejs/collapse";
+
+// 1. Configuración de Alpine
+window.Alpine = Alpine;
+Alpine.plugin(collapse);
+Alpine.start();
 
 /*
 |--------------------------------------------------------------------------
-| Navbar mobile toggle (sin librerías)
+| Navbar mobile toggle
 |--------------------------------------------------------------------------
 */
 (() => {
@@ -29,12 +36,10 @@ import "./bootstrap";
         setOpen(!isOpen);
     });
 
-    // Cerrar menú al hacer click en un link
     menu.querySelectorAll("[data-nav-link]").forEach((link) => {
         link.addEventListener("click", () => setOpen(false));
     });
 
-    // Cerrar con ESC
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") setOpen(false);
     });
@@ -42,13 +47,16 @@ import "./bootstrap";
 
 /*
 |--------------------------------------------------------------------------
-| Smooth scroll para anchors (#)
+| Smooth scroll para anchors (#) - (Versión unificada)
 |--------------------------------------------------------------------------
 */
 (() => {
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         anchor.addEventListener("click", function (e) {
-            const target = document.querySelector(this.getAttribute("href"));
+            const href = this.getAttribute("href");
+            if (!href || href === "#") return;
+
+            const target = document.querySelector(href);
             if (!target) return;
 
             e.preventDefault();
@@ -58,4 +66,43 @@ import "./bootstrap";
             });
         });
     });
+})();
+
+/*
+|--------------------------------------------------------------------------
+| Reveal on scroll
+|--------------------------------------------------------------------------
+*/
+(() => {
+    const els = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window) || !els.length) return;
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("active");
+                }
+            });
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -100px 0px" },
+    );
+
+    els.forEach((el) => observer.observe(el));
+})();
+
+// Dark Mode Toggle Logic
+(() => {
+    const theme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+
+    if (theme === "dark") document.documentElement.classList.add("dark");
+
+    window.toggleTheme = () => {
+        const isDark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+    };
 })();

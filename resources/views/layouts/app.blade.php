@@ -1,77 +1,40 @@
-<!doctype html>
-<html lang="es" class="no-js">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1220">
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- No-JS fallback (para que .reveal no quede invisible si falla JS) --}}
-  <script>document.documentElement.classList.remove('no-js');</script>
+        <title>{{ config('app.name', 'Laravel') }}</title>
 
-  @php
-    $title = trim($__env->yieldContent('title', 'Betancourt Dev | Kim Betancourt - Desarrollo web y software a medida'));
-    $description = trim($__env->yieldContent('meta_description', 'Soy Kim Betancourt (Buenos Aires). Desarrollo software a medida, páginas web corporativas y asesoramiento SEO. Laravel, WordPress + Elementor.'));
-    $canonical = url()->current();
-    $ogImage = $__env->yieldContent('og_image') ?: asset('img/og-betancourtdev.jpg');
-  @endphp
+        <script>
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        </script>
 
-  <title>{{ $title }}</title>
-  <meta name="description" content="{{ $description }}">
-  <link rel="canonical" href="{{ $canonical }}">
-  <meta name="robots" content="@yield('robots', 'index,follow')">
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="font-sans antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+            @include('layouts.navigation')
 
- {{-- OpenGraph --}}
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="@yield('og_title', $title)">
-  <meta property="og:description" content="@yield('og_description', $description)">
-  <meta property="og:url" content="{{ $canonical }}">
-  <meta property="og:image" content="{{ $ogImage }}">
+            @isset($header)
+                <header class="bg-white dark:bg-gray-800 shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
 
-{{-- Twitter --}}
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="@yield('twitter_title', $title)">
-  <meta name="twitter:description" content="@yield('twitter_description', $description)">
-  <meta name="twitter:image" content="@yield('twitter_image', $ogImage)">
-
-{{-- Schema.org --}}
-<script type="application/ld+json">
-@verbatim
-{
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Kim Tech Global",
-    "applicationCategory": "BusinessApplication",
-    "url": "https://tu-dominio.com",
-    "description": "Desarrollo web y software a medida. Landing pages y sistemas web.",
-    "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "AR"
-    },
-    "areaServed": ["AR", "LatAm"]
-}
-@endverbatim
-</script>
-  {{-- Estilos/Fonts específicos por página (tu HOME) --}}
-@stack('styles')
-  {{-- Vite --}}
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased"> {{-- Agregué antialiased para mejor lectura --}}
-  @include('partials.nav')
-
-  <main>
-    @yield('content')
-  </main>
-
-  @include('partials.footer')
-
-
-  <x-cookie-consent />
-    {{-- Scripts específicos por página (reveal, smooth scroll, etc.) --}}
-
-  @stack('scripts')
-
-</body>
+            <main>
+                
+            </main>
+        </div>
+    </body>
 </html>
