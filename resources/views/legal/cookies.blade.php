@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.public')
 
 @section('title','Política de Cookies | Betancourt Dev')
 @section('meta_description','Información sobre el uso de cookies en Betancourt Dev: necesarias y analíticas.')

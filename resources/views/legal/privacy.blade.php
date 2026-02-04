@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.public')
 
 @section('title', 'Políticas de Privacidad | Betancourt Dev')
 @section('meta_description', 'Política de privacidad de Betancourt Dev: cómo recopilamos, usamos y protegemos tus datos al contactarnos o navegar el sitio.')

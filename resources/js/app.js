@@ -1,17 +1,18 @@
 import "./bootstrap";
 import Alpine from "alpinejs";
 import collapse from "@alpinejs/collapse";
+import initContactForm from "./contact-form";
 
-// 1. Configuración de Alpine
+// -------------------------------
+// Configuración de Alpine
+// -------------------------------
 window.Alpine = Alpine;
 Alpine.plugin(collapse);
 Alpine.start();
 
-/*
-|--------------------------------------------------------------------------
-| Navbar mobile toggle
-|--------------------------------------------------------------------------
-*/
+// -------------------------------
+// Navbar mobile toggle
+// -------------------------------
 (() => {
     const btn = document.querySelector("[data-nav-toggle]");
     const menu = document.querySelector("[data-nav-menu]");
@@ -45,11 +46,9 @@ Alpine.start();
     });
 })();
 
-/*
-|--------------------------------------------------------------------------
-| Smooth scroll para anchors (#) - (Versión unificada)
-|--------------------------------------------------------------------------
-*/
+// -------------------------------
+// Smooth scroll para anchors (#)
+// -------------------------------
 (() => {
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         anchor.addEventListener("click", function (e) {
@@ -68,11 +67,9 @@ Alpine.start();
     });
 })();
 
-/*
-|--------------------------------------------------------------------------
-| Reveal on scroll
-|--------------------------------------------------------------------------
-*/
+// -------------------------------
+// Reveal on scroll
+// -------------------------------
 (() => {
     const els = document.querySelectorAll(".reveal");
     if (!("IntersectionObserver" in window) || !els.length) return;
@@ -91,7 +88,9 @@ Alpine.start();
     els.forEach((el) => observer.observe(el));
 })();
 
+// -------------------------------
 // Dark Mode Toggle Logic
+// -------------------------------
 (() => {
     const theme =
         localStorage.getItem("theme") ||
@@ -105,4 +104,18 @@ Alpine.start();
         const isDark = document.documentElement.classList.toggle("dark");
         localStorage.setItem("theme", isDark ? "dark" : "light");
     };
+})();
+
+// -------------------------------
+// Inicializar formulario de contacto
+// -------------------------------
+(() => {
+    // Si el DOM ya está cargado
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+            initContactForm("contact-form");
+        });
+    } else {
+        initContactForm("contact-form");
+    }
 })();

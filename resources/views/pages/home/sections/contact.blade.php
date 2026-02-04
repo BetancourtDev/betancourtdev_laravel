@@ -84,6 +84,8 @@
                    class="form-input w-full rounded-xl px-4 py-3">
           </div>
 
+          <div> <label for="phone" class="block text-sm font-semibold mb-2">Teléfono</label> <input id="phone" name="phone" type="tel" class="form-input w-full rounded-xl px-4 py-3" placeholder="Tu número"> </div>
+
           <div>
             <label for="message" class="block text-sm font-semibold mb-2">¿Qué necesitás?</label>
             <textarea id="message" name="message" rows="5" required
@@ -93,6 +95,7 @@
           <button type="submit" class="btn-primary w-full rounded-2xl px-8 py-4 font-bold text-lg" id="contact-submit">
             Enviar mensaje
           </button>
+          <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" value="TOKEN_GENERADO">
         </form>
       </div>
 
@@ -100,40 +103,4 @@
   </div>
 </section>
 
-@push('scripts')
-  {{-- reCAPTCHA v3 --}}
-  <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
-  <script>
-    (() => {
-      const form = document.getElementById('contact-form');
-      const input = document.getElementById('g-recaptcha-response');
-      const btn = document.getElementById('contact-submit');
-      if (!form || !input || !btn) return;
 
-      form.addEventListener('submit', async (e) => {
-        // Evita doble submit
-        if (btn.dataset.submitted === '1') return;
-        e.preventDefault();
-
-        // Si no está recaptcha, manda igual
-        if (!window.grecaptcha) {
-          btn.dataset.submitted = '1';
-          btn.disabled = true;
-          form.submit();
-          return;
-        }
-
-        try {
-          const token = await grecaptcha.execute("{{ config('services.recaptcha.site_key') }}", { action: 'contact' });
-          input.value = token;
-
-          btn.dataset.submitted = '1';
-          btn.disabled = true;
-          form.submit();
-        } catch (err) {
-          alert('No pudimos validar el formulario. Probá de nuevo.');
-        }
-      });
-    })();
-  </script>
-@endpush

@@ -2,27 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\LeadController;
-use App\Http\Controllers\ProfileController;
 
-
-Route::middleware(['auth', 'verified'])
+// Agregamos un middleware de 'admin' o un 'can:access-admin'
+Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-        Route::get('/leads', [LeadController::class, 'index'])
-            ->name('leads.index');
-
-        Route::get('/leads/{lead}', [LeadController::class, 'show'])
-            ->name('leads.show');
-
-        Route::patch('/leads/{lead}/status', [LeadController::class, 'updateStatus'])
-            ->name('leads.status');
-
-        Route::patch('/leads/{lead}/contacted', [LeadController::class, 'markContacted'])
-            ->name('leads.contacted');
-
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        // Usamos Route::controller para no repetir LeadController::class
+        Route::controller(LeadController::class)->prefix('leads')->name('leads.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{lead}', 'show')->name('show');
+            Route::patch('/{lead}/status', 'updateStatus')->name('status');
+            Route::patch('/{lead}/contacted', 'markContacted')->name('contacted');
+        });
     });

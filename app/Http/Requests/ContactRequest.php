@@ -10,7 +10,7 @@ class ContactRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return ! session()->has('ok');
     }
 
     public function rules(): array
@@ -18,6 +18,7 @@ class ContactRequest extends FormRequest
         return [
             'name'    => ['required', 'string', 'max:80'],
             'email'   => ['required', 'email', 'max:120'],
+            'phone'  => ['nullable', 'string', 'max:20'],
             'message' => ['required', 'string', 'min:10', 'max:2000'],
             'g-recaptcha-response' => ['required', new RecaptchaV3('contact')],
 
@@ -40,6 +41,7 @@ class ContactRequest extends FormRequest
         return [
             'name.required' => 'Decime tu nombre 🙂',
             'email.email'   => 'Ese email no parece válido.',
+            'phone.max'     => 'El número de teléfono es muy largo.',
             'message.min'   => 'Contame un poquito más (mínimo 10 caracteres).',
         ];
     }
@@ -50,6 +52,7 @@ class ContactRequest extends FormRequest
         $this->merge([
             'name'  => is_string($this->name) ? trim($this->name) : $this->name,
             'email' => is_string($this->email) ? trim($this->email) : $this->email,
+            'phone' => is_string($this->phone) ? trim($this->phone) : $this->phone,
         ]);
     }
 }

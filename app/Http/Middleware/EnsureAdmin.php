@@ -13,11 +13,14 @@ class EnsureAdmin
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, \Closure $next)
+    public function handle(Request $request, Closure $next)
     {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-            abort(403);
+        $user = $request->user();
+
+        if (!$user || !$user->is_admin) {
+            abort(403, 'Acceso denegado a Betancourt dev Admin.');
         }
+
         return $next($request);
     }
 }

@@ -24,13 +24,13 @@
     </p>
 
     <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-      <a href="{{ $brand['linkedin_url'] ?? '#' }}"
+      <a href="{{ $brand['linkedin_url'] ?? 'https://www.linkedin.com/in/kimberlyn-betancourt-06ba42ba/' }}"
          class="btn-secondary inline-flex items-center justify-center rounded-2xl px-6 py-3 font-semibold"
          target="_blank" rel="noopener">
         LinkedIn
       </a>
 
-      <a href="{{ $brand['github_url'] ?? '#' }}"
+      <a href="{{ $brand['github_url'] ?? 'https://github.com/BetancourtDev' }}"
          class="btn-secondary inline-flex items-center justify-center rounded-2xl px-6 py-3 font-semibold"
          target="_blank" rel="noopener">
         GitHub

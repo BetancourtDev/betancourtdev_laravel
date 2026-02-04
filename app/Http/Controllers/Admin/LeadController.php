@@ -3,84 +3,50 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\LeadIndexRequest;
 use App\Models\Lead;
-use Illuminate\Http\Request;
+use Illuminate\Contracts\View\View;
 
 class LeadController extends Controller
 {
-    private const STATUSES = ['new', 'contacted', 'qualified', 'closed', 'spam'];
+    public const STATUSES = ['new', 'contacted', 'qualified', 'closed', 'spam'];
 
-    public function index(Request $request)
+    public function index(LeadIndexRequest $request): View
     {
-        $query = Lead::query()->latest();
+        $filters = $request->validated();
 
-        // search
-        if ($q = trim((string) $request->get('q'))) {
-            $query->where(function ($w) use ($q) {
-                $w->where('name', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%")
-                    ->orWhere('message', 'like', "%{$q}%");
-            });
-        }
+        $base = Lead::query();
 
-        // filters
-        if ($status = $request->get('status')) {
-            if (in_array($status, self::STATUSES, true)) {
-                $query->where('status', $status);
-            }
-        }
+        $leads = (clone $base)
+            ->filter($filters)      // scope en el modelo
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
-        if ($source = trim((string) $request->get('source'))) {
-            $query->where('source', $source);
-        }
+        $counts = (clone $base)
+            ->filter($filters, ignoreStatus: true) // mismo filtro pero sin status (para que KPIs reflejen el resto)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->all();
 
-        // date range (opcional)
-        if ($from = $request->get('from')) {
-            $query->whereDate('created_at', '>=', $from);
+        // normalizamos faltantes
+        foreach (self::STATUSES as $st) {
+            $counts[$st] = $counts[$st] ?? 0;
         }
-        if ($to = $request->get('to')) {
-            $query->whereDate('created_at', '<=', $to);
-        }
-
-        $leads = $query->paginate(20)->withQueryString();
 
         return view('admin.leads.index', [
             'leads' => $leads,
             'statuses' => self::STATUSES,
+            'counts' => $counts,
         ]);
     }
 
-    public function show(Lead $lead)
+    public function show(Lead $lead): View
     {
         return view('admin.leads.show', [
             'lead' => $lead,
             'statuses' => self::STATUSES,
         ]);
-    }
-
-    public function updateStatus(Request $request, Lead $lead)
-    {
-        $data = $request->validate([
-            'status' => ['required', 'in:' . implode(',', self::STATUSES)],
-        ]);
-
-        $lead->update(['status' => $data['status']]);
-
-        // si pasa a contacted y no tiene contacted_at
-        if ($data['status'] === 'contacted' && !$lead->contacted_at) {
-            $lead->update(['contacted_at' => now()]);
-        }
-
-        return back()->with('ok', 'Estado actualizado ✅');
-    }
-
-    public function markContacted(Lead $lead)
-    {
-        $lead->update([
-            'status' => $lead->status === 'spam' ? 'spam' : 'contacted',
-            'contacted_at' => now(),
-        ]);
-
-        return back()->with('ok', 'Marcado como contactado ✅');
     }
 }

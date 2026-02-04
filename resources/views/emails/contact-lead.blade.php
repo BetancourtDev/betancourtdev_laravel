@@ -5,6 +5,7 @@
 @component('mail::panel')
 **Nombre:** {{ $data['name'] ?? '-' }}  
 **Email:** {{ $data['email'] ?? '-' }}  
+**Teléfono:** {{ $data['phone'] ?? '-' }}
 @if(!empty($data['lead_id']))
 **Lead ID:** #{{ $data['lead_id'] }}
 @endif
