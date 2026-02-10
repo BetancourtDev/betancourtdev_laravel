@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1220">
 
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+
+
     {{-- No-JS fallback (para que .reveal no quede invisible si falla JS) --}}
   <script>document.documentElement.classList.remove('no-js');</script>
 

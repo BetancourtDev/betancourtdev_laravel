@@ -70,7 +70,8 @@
           <input type="text" name="website" class="hidden" tabindex="-1" autocomplete="off">
 
           {{-- recaptcha v3 token --}}
-          <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+
 
           <div>
             <label for="name" class="block text-sm font-semibold mb-2">Nombre</label>
@@ -95,7 +96,6 @@
           <button type="submit" class="btn-primary w-full rounded-2xl px-8 py-4 font-bold text-lg" id="contact-submit">
             Enviar mensaje
           </button>
-          <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" value="TOKEN_GENERADO">
         </form>
       </div>
 

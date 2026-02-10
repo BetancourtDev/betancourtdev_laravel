@@ -1,4 +1,6 @@
 // resources/js/contact-form.js
+console.log("🔧 initContactForm cargado y listo");
+
 import intlTelInput from "intl-tel-input";
 import "intl-tel-input/build/css/intlTelInput.css";
 
@@ -15,20 +17,30 @@ export default function initContactForm(formId = "contact-form") {
     const form = document.getElementById(formId);
     if (!form) return;
 
+    // ⚡ Evitar inicialización múltiple
+    if (form.dataset.initialized === "1") return;
+    form.dataset.initialized = "1";
+
     const phoneInput = form.querySelector("#phone");
     const recaptchaInput = form.querySelector("#g-recaptcha-response");
     const submitBtn = form.querySelector("#contact-submit");
 
     // -------------------------------
-    // SiteKey desde env de Vite
+    // SiteKey desde env Vite o data attribute
     // -------------------------------
-    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+    const siteKey =
+        import.meta.env.VITE_RECAPTCHA_SITE_KEY || form.dataset.recaptchaKey;
+
     if (!siteKey) {
         console.error(
-            "⚠️ reCAPTCHA no configurado. Revisa VITE_RECAPTCHA_SITE_KEY en .env",
+            "⚠️ reCAPTCHA no configurado. Revisá VITE_RECAPTCHA_SITE_KEY o data-recaptcha-key en el form",
         );
         return;
     }
+    console.log(
+        "✅ reCAPTCHA Site Key cargada:",
+        siteKey.substring(0, 20) + "...",
+    );
 
     // -------------------------------
     // Inicializar phone input
@@ -49,26 +61,6 @@ export default function initContactForm(formId = "contact-form") {
     }
 
     // -------------------------------
-    // Cargar reCAPTCHA dinámicamente
-    // -------------------------------
-    function loadRecaptchaScript() {
-        return new Promise((resolve) => {
-            if (window.grecaptcha) return resolve();
-
-            const script = document.createElement("script");
-            script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
-            script.async = true;
-            script.defer = true;
-            script.onload = () => resolve();
-            script.onerror = () => {
-                console.error("Error al cargar reCAPTCHA");
-                resolve(); // evita bloquear el submit
-            };
-            document.head.appendChild(script);
-        });
-    }
-
-    // -------------------------------
     // Validación mínima
     // -------------------------------
     function validateForm() {
@@ -76,61 +68,100 @@ export default function initContactForm(formId = "contact-form") {
         for (let field of requiredFields) {
             if (!field.value.trim()) {
                 field.focus();
+                alert(`El campo "${field.name}" es obligatorio`);
                 return false;
             }
         }
         return true;
     }
 
+    console.log("✅ Formulario de contacto inicializado");
+
+    // -------------------------------
+    // Variable para controlar el envío
+    // -------------------------------
+    let isSubmitting = false;
+
     // -------------------------------
     // Submit handler
     // -------------------------------
-    form.addEventListener("submit", async (e) => {
-        if (submitBtn.dataset.submitted === "1") return;
+    form.addEventListener("submit", (e) => {
         e.preventDefault();
 
+        console.log("📤 Intentando enviar formulario...");
+
+        // ⚡ Evitar doble submit
+        if (isSubmitting) {
+            console.warn("⚠️ Ya se está enviando el formulario, ignorando...");
+            return;
+        }
+
         // Validación básica
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            return;
+        }
 
         // Normalizar teléfono
         if (iti && phoneInput) {
-            const number = iti.getNumber();
-            phoneInput.value = number || phoneInput.value.trim();
-        }
-
-        try {
-            await loadRecaptchaScript();
-
-            if (window.grecaptcha && recaptchaInput) {
-                grecaptcha.ready(async () => {
-                    try {
-                        const token = await grecaptcha.execute(siteKey, {
-                            action: "contact",
-                        });
-                        recaptchaInput.value = token;
-
-                        // Evitar doble submit
-                        submitBtn.dataset.submitted = "1";
-                        submitBtn.disabled = true;
-
-                        // Enviar formulario
-                        form.submit();
-                    } catch (err) {
-                        console.error("reCAPTCHA execute failed:", err);
-                        alert(
-                            "No pudimos validar el formulario. Probá de nuevo.",
-                        );
-                    }
-                });
-            } else {
-                // Fallback si no hay grecaptcha
-                submitBtn.dataset.submitted = "1";
-                submitBtn.disabled = true;
-                form.submit();
+            const fullNumber = iti.getNumber();
+            if (fullNumber) {
+                phoneInput.value = fullNumber;
             }
-        } catch (err) {
-            console.error("Error cargando reCAPTCHA:", err);
-            alert("No pudimos validar el formulario. Probá de nuevo.");
         }
+
+        // Verificar que grecaptcha esté disponible
+        if (!window.grecaptcha) {
+            console.error("❌ grecaptcha no está disponible");
+            alert(
+                "Error: reCAPTCHA no se cargó correctamente. Recargá la página.",
+            );
+            return;
+        }
+
+        // Marcar como enviando
+        isSubmitting = true;
+        submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = "Verificando...";
+
+        // Generar token FRESCO y enviar inmediatamente
+        grecaptcha.ready(() => {
+            console.log("🔒 Ejecutando reCAPTCHA...");
+
+            grecaptcha
+                .execute(siteKey, { action: "contact" })
+                .then((token) => {
+                    if (!token) {
+                        throw new Error("No se generó token de reCAPTCHA");
+                    }
+
+                    console.log(
+                        "✅ Token reCAPTCHA generado (longitud:",
+                        token.length,
+                        ")",
+                    );
+
+                    // Insertar token fresco
+                    recaptchaInput.value = token;
+
+                    // Cambiar texto del botón
+                    submitBtn.textContent = "Enviando...";
+
+                    // ⚡ ENVIAR INMEDIATAMENTE (sin delays)
+                    console.log("📨 Enviando formulario ahora...");
+                    form.submit();
+                })
+                .catch((err) => {
+                    console.error("❌ Error en reCAPTCHA:", err);
+                    alert(
+                        "No pudimos validar el formulario. Por favor, intentá de nuevo.",
+                    );
+
+                    // Resetear para permitir reintento
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                });
+        });
     });
 }

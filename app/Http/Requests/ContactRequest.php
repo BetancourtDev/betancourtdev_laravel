@@ -31,6 +31,8 @@ class ContactRequest extends FormRequest
             'utm_campaign' => ['nullable', 'string', 'max:100'],
             'source'       => ['nullable', 'string', 'max:50'],
 
+            'g-recaptcha-response' => ['required', new RecaptchaV3('contact')],
+
 
 
         ];
@@ -43,6 +45,7 @@ class ContactRequest extends FormRequest
             'email.email'   => 'Ese email no parece válido.',
             'phone.max'     => 'El número de teléfono es muy largo.',
             'message.min'   => 'Contame un poquito más (mínimo 10 caracteres).',
+            'g-recaptcha-response.required' => 'La verificación anti-spam es requerida.',
         ];
     }
 
